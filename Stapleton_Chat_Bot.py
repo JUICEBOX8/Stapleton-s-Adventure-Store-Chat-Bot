@@ -2,6 +2,17 @@ import json
 from google import genai
 from google.genai import types
 
+st.markdown("""
+    <style>
+    .stApp {
+        background-color: #2e3b23; /* Forest Green */
+        color: white;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+
+
 # 1. Setup
 client = genai.Client(api_key="AIzaSyDoNkToIuwlX9pE1EgZn-57jfJdH0LiLW8")
 
