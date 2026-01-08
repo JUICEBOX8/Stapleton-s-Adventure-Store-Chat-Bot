@@ -6,73 +6,66 @@ from google.genai import types
 # 1. Page Configuration & Styling
 st.set_page_config(page_title="Arlo | Stapleton Outfitter", page_icon="🌲")
 
-# UPDATED: HIGH VISIBILITY ADVENTURE GEAR THEME
+# ADVENTURE GEAR HIGH-CONTRAST THEME
 st.markdown("""
     <style>
-    /* Import Adventure Gear fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&family=Roboto+Mono&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&family=Roboto:wght@400;700&display=swap');
 
-    /* Main App Background - Light Grey for high readability */
     .stApp {
-        background-color: #f4f4f4; 
-        color: #1a1a1a;
+        background-color: #f8f9fa; /* Very light grey */
+        color: #212529; /* Dark grey text */
         font-family: 'Open Sans', sans-serif;
     }
 
-    /* Chat Message Bubbles */
+    /* Professional Chat Bubbles */
     [data-testid="stChatMessage"] {
-        background-color: #ffffff; /* Pure white bubbles */
-        border: 1px solid #ddd;
-        border-radius: 15px;
+        background-color: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #dee2e6;
         padding: 15px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        color: #1a1a1a !important;
+        margin-bottom: 10px;
+        color: #212529 !important;
     }
 
-    /* Arlo's specific bubble color to differentiate */
+    /* Arlo's Specific Accent */
     [data-testid="stChatMessageAssistant"] {
-        background-color: #e9ecef; /* Slightly darker grey for Arlo */
+        border-left: 5px solid #d35400; /* Orange signature stripe */
     }
 
-    /* Adventure Gear Orange Title */
+    /* HYPERLINK STYLING - High Visibility */
+    a {
+        color: #d35400 !important; /* Adventure Orange */
+        font-weight: 700;
+        text-decoration: underline !important;
+    }
+
     h1 {
-        color: #d35400; /* Rugged Burnt Orange */
-        font-family: 'Open Sans', sans-serif;
+        color: #2c3e50;
         font-weight: 800;
         text-transform: uppercase;
-        border-bottom: 3px solid #d35400;
-        padding-bottom: 10px;
-    }
-
-    /* High-contrast labels for Premium/Value */
-    strong {
-        color: #2c3e50;
-        font-weight: 700;
-    }
-    
-    /* Input box styling */
-    .stChatInputContainer {
-        padding-bottom: 20px;
+        letter-spacing: -1px;
     }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🌲 Stapleton Gear Expert")
+st.title("🌲 Arlo: Gear Specialist")
 
-# 2. Setup Gemini Client (Using Secrets)
+# 2. Setup (Using Secrets)
 api_key = st.secrets["GEMINI_API_KEY"]
 client = genai.Client(api_key=api_key)
 
+# UPDATED PROMPT: Strict instruction to avoid JSON and use Markdown Links
 SYSTEM_PROMPT = """
-You are 'Arlo', the equipment lead at Stapleton Adventure Store. 
-You are rugged, efficient, and extremely succinct. 
+You are 'Arlo', the gear expert at Stapleton Adventure Store. 
+Talk like a human expert, NOT a computer. Never show JSON code or curly brackets.
 
-STRICT RESPONSE GUIDELINES:
-1. BE BRIEF: Keep your entire response under 4 sentences total.
-2. Ask one follow-up question at the end.
-3. INVENTORY ONLY: Only recommend gear from the STORE_INVENTORY.
-4. FORMAT: Use 'PREMIUM OPTION' and 'VALUE OPTION' as bold headers.
-5. Provide the price and URL for every suggestion. 
+STRICT FORMATTING RULES:
+1. NO JSON: Provide a clean, bulleted list for gear.
+2. CLICKABLE LINKS: You MUST format every product as a Markdown hyperlink. 
+   Example: [Product Name](URL)
+3. PRICING: List the price immediately after the link.
+4. TWO OPTIONS: Provide one 'PREMIUM' and one 'VALUE' choice.
+5. BREVITY: Keep the total response under 4 sentences.
 """
 
 # 3. Initialize Chat History
@@ -85,26 +78,29 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # 5. Chat Input Logic
-if prompt := st.chat_input("Ask Arlo about the right gear for your trip..."):
+if prompt := st.chat_input("What mission are we gearing up for?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
+    # Prepare Inventory Context
     try:
         with open('products.json', 'r', encoding='utf-8') as f:
             inventory = json.load(f)
-            inventory_context = json.dumps(inventory[:30], indent=2)
+            # We convert JSON to a string so Arlo can read it, 
+            # but we tell him NOT to repeat it back as JSON.
+            inventory_context = json.dumps(inventory[:30])
     except FileNotFoundError:
-        inventory_context = "Inventory file missing."
+        inventory_context = "Inventory not found."
 
     with st.chat_message("assistant"):
-        full_query = f"STORE_INVENTORY: {inventory_context}\n\nUSER_REQUEST: {prompt}"
+        full_query = f"STORE_INVENTORY_DATA: {inventory_context}\n\nUSER_REQUEST: {prompt}"
         
         response = client.models.generate_content(
             model='gemini-2.0-flash',
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
-                temperature=0.3
+                temperature=0.2
             ),
             contents=[full_query]
         )
