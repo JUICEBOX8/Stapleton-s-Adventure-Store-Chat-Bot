@@ -1,3 +1,4 @@
+
 import streamlit as st
 import json
 from google import genai
@@ -6,20 +7,51 @@ from google.genai import types
 # 1. Page Configuration & Styling
 st.set_page_config(page_title="Arlo | Stapleton Outfitter", page_icon="🌲")
 
+# ADVENTURE GEAR BRANDING CSS
 st.markdown("""
     <style>
+    /* Import Adventure Gear fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&family=Roboto:wght@400;700&display=swap');
+
     .stApp {
-        background-color: #2e3b23;
-        color: white;
+        background-color: #1a1a1a; /* Deeper dark background like the site footer */
+        color: #ffffff;
+        font-family: 'Open Sans', sans-serif;
     }
-    .stChatMessage { color: black; } /* Makes chat bubbles readable on dark green */
+
+    /* Styling the Chat Bubbles */
+    [data-testid="stChatMessage"] {
+        background-color: #262626; /* Dark slate bubble */
+        border-radius: 10px;
+        border: 1px solid #3d3d3d;
+        color: #ffffff !important;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    /* Title Styling */
+    h1 {
+        color: #e67e22; /* Adventure orange accent */
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Making links look like the website links */
+    a {
+        color: #3498db !important;
+        text-decoration: none;
+        font-weight: bold;
+    }
+    
+    a:hover {
+        text-decoration: underline;
+    }
     </style>
     """, unsafe_allow_html=True)
 
 st.title("🌲 Talk to Arlo")
 
-# 2. Setup Gemini Client
-# Note: For production, move this to st.secrets["GEMINI_API_KEY"]
+# 2. Setup Gemini Client (Using Secrets)
 api_key = st.secrets["GEMINI_API_KEY"]
 client = genai.Client(api_key=api_key)
 
@@ -48,12 +80,10 @@ for message in st.session_state.messages:
 
 # 5. Chat Input Logic
 if prompt := st.chat_input("What gear do you need for the bush?"):
-    # Add user message to state and display
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Prepare Inventory Context
     try:
         with open('products.json', 'r', encoding='utf-8') as f:
             inventory = json.load(f)
@@ -61,11 +91,9 @@ if prompt := st.chat_input("What gear do you need for the bush?"):
     except FileNotFoundError:
         inventory_context = "Inventory file missing."
 
-    # Generate Response
     with st.chat_message("assistant"):
         full_query = f"STORE_INVENTORY: {inventory_context}\n\nUSER_REQUEST: {prompt}"
         
-        # We create a new chat session for each run to keep it simple for Streamlit
         response = client.models.generate_content(
             model='gemini-2.0-flash',
             config=types.GenerateContentConfig(
@@ -78,5 +106,4 @@ if prompt := st.chat_input("What gear do you need for the bush?"):
         response_text = response.text
         st.markdown(response_text)
         
-    # Add assistant response to state
     st.session_state.messages.append({"role": "assistant", "content": response_text})
