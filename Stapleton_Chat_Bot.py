@@ -20,7 +20,7 @@ st.title("🌲 Talk to Arlo")
 
 # 2. Setup Gemini Client
 # Note: For production, move this to st.secrets["GEMINI_API_KEY"]
-client = genai.Client(api_key="YOUR_API_KEY_HERE")
+client = genai.Client(api_key="AIzaSyDoNkToIuwlX9pE1EgZn-57jfJdH0LiLW8")
 
 SYSTEM_PROMPT = """
 You are 'Arlo', the equipment lead at Stapleton Adventure Store. 
