@@ -3,16 +3,19 @@ import json
 from google import genai
 from google.genai import types
 
+# 1. Page Configuration & Styling
+st.set_page_config(page_title="Arlo | Stapleton Outfitter", page_icon="🌲")
+
 st.markdown("""
     <style>
     .stApp {
-        background-color: #2e3b23; /* Forest Green */
+        background-color: #2e3b23;
         color: white;
     }
     </style>
     """, unsafe_allow_html=True)
 
-
+st.title("🌲 Talk to Arlo")
 
 # 1. Setup
 client = genai.Client(api_key="AIzaSyDoNkToIuwlX9pE1EgZn-57jfJdH0LiLW8")
