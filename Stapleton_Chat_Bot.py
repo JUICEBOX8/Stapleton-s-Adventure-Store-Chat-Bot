@@ -1,4 +1,3 @@
-
 import streamlit as st
 import json
 from google import genai
@@ -7,49 +6,58 @@ from google.genai import types
 # 1. Page Configuration & Styling
 st.set_page_config(page_title="Arlo | Stapleton Outfitter", page_icon="🌲")
 
-# ADVENTURE GEAR BRANDING CSS
+# UPDATED: HIGH VISIBILITY ADVENTURE GEAR THEME
 st.markdown("""
     <style>
     /* Import Adventure Gear fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&family=Roboto:wght@400;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&family=Roboto+Mono&display=swap');
 
+    /* Main App Background - Light Grey for high readability */
     .stApp {
-        background-color: #1a1a1a; /* Deeper dark background like the site footer */
-        color: #ffffff;
+        background-color: #f4f4f4; 
+        color: #1a1a1a;
         font-family: 'Open Sans', sans-serif;
     }
 
-    /* Styling the Chat Bubbles */
+    /* Chat Message Bubbles */
     [data-testid="stChatMessage"] {
-        background-color: #262626; /* Dark slate bubble */
-        border-radius: 10px;
-        border: 1px solid #3d3d3d;
-        color: #ffffff !important;
-        font-family: 'Roboto', sans-serif;
+        background-color: #ffffff; /* Pure white bubbles */
+        border: 1px solid #ddd;
+        border-radius: 15px;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        color: #1a1a1a !important;
     }
 
-    /* Title Styling */
+    /* Arlo's specific bubble color to differentiate */
+    [data-testid="stChatMessageAssistant"] {
+        background-color: #e9ecef; /* Slightly darker grey for Arlo */
+    }
+
+    /* Adventure Gear Orange Title */
     h1 {
-        color: #e67e22; /* Adventure orange accent */
-        font-weight: 700;
+        color: #d35400; /* Rugged Burnt Orange */
+        font-family: 'Open Sans', sans-serif;
+        font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        border-bottom: 3px solid #d35400;
+        padding-bottom: 10px;
     }
 
-    /* Making links look like the website links */
-    a {
-        color: #3498db !important;
-        text-decoration: none;
-        font-weight: bold;
+    /* High-contrast labels for Premium/Value */
+    strong {
+        color: #2c3e50;
+        font-weight: 700;
     }
     
-    a:hover {
-        text-decoration: underline;
+    /* Input box styling */
+    .stChatInputContainer {
+        padding-bottom: 20px;
     }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🌲 Talk to Arlo")
+st.title("🌲 Stapleton Gear Expert")
 
 # 2. Setup Gemini Client (Using Secrets)
 api_key = st.secrets["GEMINI_API_KEY"]
@@ -61,12 +69,10 @@ You are rugged, efficient, and extremely succinct.
 
 STRICT RESPONSE GUIDELINES:
 1. BE BRIEF: Keep your entire response under 4 sentences total.
-2. Please ask the user an additional question after the suggestion for more detail.
-3. DIRECT ANSWERS: If a user asks a question, answer it in the first sentence.
-4. INVENTORY ONLY: Only recommend gear from the provided STORE_INVENTORY.
-5. FORMAT: Use a 'Premium' and 'Value' label if providing options.
-6. Please always provide the price and URL for the Premium and Value option. 
-7. NEVER mention Amazon, MEC, or other outside retailers.
+2. Ask one follow-up question at the end.
+3. INVENTORY ONLY: Only recommend gear from the STORE_INVENTORY.
+4. FORMAT: Use 'PREMIUM OPTION' and 'VALUE OPTION' as bold headers.
+5. Provide the price and URL for every suggestion. 
 """
 
 # 3. Initialize Chat History
@@ -79,7 +85,7 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # 5. Chat Input Logic
-if prompt := st.chat_input("What gear do you need for the bush?"):
+if prompt := st.chat_input("Ask Arlo about the right gear for your trip..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -103,7 +109,5 @@ if prompt := st.chat_input("What gear do you need for the bush?"):
             contents=[full_query]
         )
         
-        response_text = response.text
-        st.markdown(response_text)
-        
-    st.session_state.messages.append({"role": "assistant", "content": response_text})
+        st.markdown(response.text)
+        st.session_state.messages.append({"role": "assistant", "content": response.text})
